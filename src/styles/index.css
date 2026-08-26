@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --color-papel: #edeae3;
+  --color-concreto: #c9c5bb;
+  --color-painel: #dcd8ce;
+  --color-grafite: #191c1f;
+  --color-projeto: #33566e;
+  --color-vidro: #223a4c;
+  --color-obra: #f25c05;
+  --color-luz: #ffd27d;
+
+  --font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "Consolas", monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  body {
+    @apply bg-papel font-body text-grafite antialiased;
+  }
+  ::selection {
+    @apply bg-obra text-papel;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-obra;
+  }
+}
+
+@layer components {
+  /* eyebrow no formato de cota de projeto: |— ETAPA 01 — FUNDAÇÃO —| */
+  .cota {
+    @apply font-mono text-[0.6875rem] tracking-[0.18em] uppercase text-projeto;
+  }
+  .cota::before,
+  .cota::after {
+    content: "";
+    @apply inline-block h-[0.9em] w-px translate-y-[0.15em] bg-projeto/60;
+  }
+  .cota::before {
+    @apply mr-3;
+  }
+  .cota::after {
+    @apply ml-3;
+  }
+
+  .display {
+    @apply font-display font-bold uppercase leading-[0.92] tracking-tight;
+  }
+
+  /* faixa zebrada de sinalização de obra */
+  .zebra {
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--color-obra) 0 10px,
+      var(--color-grafite) 10px 20px
+    );
+  }
+
+  .btn-obra {
+    @apply inline-flex items-center gap-2 bg-obra px-6 py-3 font-display text-lg font-bold uppercase tracking-wide text-papel transition-transform duration-150 ease-out hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .hairline {
+    @apply border-grafite/25;
+  }
+
+  /* estado "obra entregue" (fallback sem animação): esconde o canteiro */
+  .scene--complete .tmp {
+    display: none;
+  }
+
+  /* entrada do hero (uma vez, no load) */
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .hero-rise {
+    animation: rise 0.8s ease-out both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-rise {
+      animation: none;
+    }
+  }
+
+  /* linha tracejada de projeto */
+  .traceja {
+    background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-projeto) 50%, transparent) 55%,
+      transparent 45%
+    );
+    background-size: 12px 1px;
+    background-repeat: repeat-x;
+    height: 1px;
+  }
+}
