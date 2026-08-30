@@ -1,17 +1,26 @@
 # Plano de animação
 
-## Cena pinada (`#obra`) — GSAP ScrollTrigger, scrub: true
+## Cena pinada (`#obra`) — GSAP ScrollTrigger, scrub: 0.6
 
-Pin de 400vh no desktop, 300vh no mobile. Uma única timeline com labels por etapa.
-Progresso da timeline alimenta o HUD (% e nome da etapa).
+> Decisão final com o cliente (2026-08-28, 2ª revisão): nem SVG esquemático,
+> nem slideshow de fotos — o cliente quer a obra **contínua e real**. A cena é
+> um vídeo timelapse (Wan 3.0, quadro inicial e final travados na mesma câmera)
+> cujo TEMPO é controlado pelo scroll. O SVG permanece só na planta do hero.
 
-| Trecho | Etapa | O que acontece na cena | Texto lateral |
-|---|---|---|---|
-| 0.00–0.25 | 01 Fundação | piquetes saem, escavação abre, estacas descem em stagger, sapata/radier desenha | bloco 01 entra |
-| 0.25–0.55 | 02 Estrutura | grua sobe e gira, pavimentos empilham em stagger (8 lajes), céu começa a clarear | bloco 02 |
-| 0.55–0.80 | 03 Fachada | painéis varrem cada pavimento, esquadrias aparecem, grua recua | bloco 03 |
-| 0.80–1.00 | 04 Entrega | grua sai, coroamento + vidro, céu chega ao dia, janelas acendem, selo ENTREGUE | bloco 04 |
+Pin de 430% no desktop, 320% no mobile. `video.currentTime` persegue o alvo
+(`progress × duração`) num loop de rAF com lerp 0.22 — suaviza seeks e funciona
+nos dois sentidos. Vídeo re-encodado com keyframes densos para seek fluido;
+`muted playsInline`, sem áudio, poster do terreno vazio, carregamento completo
+disparado quando a seção se aproxima (`start: 'top 160%'`).
 
+| Trecho | Etapa | Conteúdo do vídeo |
+|---|---|---|
+| 0.00–0.24 | 01 Fundação | terreno cercado → escavação e fundações |
+| 0.24–0.54 | 02 Estrutura | esqueleto de concreto sobe com a grua |
+| 0.54–0.79 | 03 Fachada | painéis e vidros fecham o prédio |
+| 0.79–1.00 | 04 Entrega | grua sai, prédio pronto, luzes acesas |
+
+Gradientes grafite no topo/rodapé protegem legibilidade de header, cards e HUD.
 Blocos de texto: crossfade (só opacity/transform Y curto), nunca dois visíveis.
 
 ## Outras animações
@@ -22,10 +31,10 @@ Blocos de texto: crossfade (só opacity/transform Y curto), nunca dois visíveis
 
 ## Regras
 
-- Só `transform`, `opacity`, `stroke-dashoffset` e cor de céu (background do wrapper).
+- Só `transform` e `opacity` nas fotos (compositor-friendly).
 - GSAP é dono exclusivo da cena; CSS cuida apenas de hovers (nunca a mesma propriedade).
-- `prefers-reduced-motion`: sem pin e sem scrub — cena renderiza o prédio pronto,
-  etapas viram cartões estáticos empilhados. Reveals viram estado final.
+- `prefers-reduced-motion`: sem pin e sem scrub — etapas viram cartões estáticos
+  empilhados, cada um com sua foto. Reveals viram estado final.
 - Pin liberado ao fim da narrativa; nada de scroll horizontal; sem scroll-jacking
   de velocidade (Lenis descartado — não agrega aqui).
 - Cleanup completo dos ScrollTriggers no unmount (`gsap.context`).

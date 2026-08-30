@@ -73,11 +73,6 @@
     @apply border-grafite/25;
   }
 
-  /* estado "obra entregue" (fallback sem animação): esconde o canteiro */
-  .scene--complete .tmp {
-    display: none;
-  }
-
   /* entrada do hero (uma vez, no load) */
   @keyframes rise {
     from {

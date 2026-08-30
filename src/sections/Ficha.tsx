@@ -1,4 +1,6 @@
-import { ficha } from '../content/site'
+import { ficha, stages, avisoImagens } from '../content/site'
+
+const entrega = stages[stages.length - 1]
 
 export function Ficha() {
   return (
@@ -7,6 +9,20 @@ export function Ficha() {
       <h2 className="display mt-4 max-w-2xl text-5xl md:text-6xl">
         44 endereços sobre o mesmo alicerce.
       </h2>
+      <figure className="mt-12 border-2 border-grafite">
+        <img
+          src={entrega.img}
+          alt={entrega.imgAlt}
+          width={1920}
+          height={1072}
+          loading="lazy"
+          decoding="async"
+          className="aspect-video w-full object-cover"
+        />
+        <figcaption className="border-t-2 border-grafite px-4 py-2 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-grafite/60">
+          Vista da esquina — {avisoImagens}
+        </figcaption>
+      </figure>
       <dl className="mt-12 grid gap-x-12 sm:grid-cols-2 lg:grid-cols-3">
         {ficha.itens.map((item) => (
           <div key={item.label} className="border-t-2 border-grafite py-5">

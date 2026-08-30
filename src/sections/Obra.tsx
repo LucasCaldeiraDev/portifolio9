@@ -1,11 +1,10 @@
 import { useLayoutEffect, useRef } from 'react'
 import { gsap } from '../lib/gsap'
 import { stages } from '../content/site'
-import { BuildingScene } from '../components/BuildingScene'
 import { StageCard } from '../components/StageCard'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 
-// Fronteiras das etapas na timeline (unidades 0–100), usadas pelo HUD.
+// Fronteiras das etapas no progresso do pin (0–1), usadas pelo HUD e pelos cards.
 const STAGE_BOUNDS = [0, 0.24, 0.54, 0.79]
 
 export function Obra() {
@@ -16,12 +15,9 @@ export function Obra() {
 function ObraStatic() {
   return (
     <section id="obra" aria-label="Etapas da obra" className="bg-grafite">
-      <div className="bg-[linear-gradient(180deg,#b8ccd9_0%,#cfdde6_60%,#e5e2d8_100%)] py-10">
-        <BuildingScene complete className="mx-auto block h-[60vh] w-full max-w-3xl" />
-      </div>
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-16 md:grid-cols-2">
         {stages.map((s) => (
-          <StageCard key={s.id} stage={s} />
+          <StageCard key={s.id} stage={s} withImage />
         ))}
       </div>
     </section>
@@ -30,29 +26,45 @@ function ObraStatic() {
 
 function ObraAnimated() {
   const sectionRef = useRef<HTMLElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const hudStageRef = useRef<HTMLSpanElement>(null)
   const hudPctRef = useRef<HTMLSpanElement>(null)
   const hudBarRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     const section = sectionRef.current
-    if (!section) return
+    const video = videoRef.current
+    if (!section || !video) return
+
+    // O scroll define o tempo-alvo; um loop de rAF persegue o alvo com lerp
+    // para suavizar os seeks do vídeo (que são discretos por natureza).
+    let targetTime = 0
+    let rafId = 0
+    let running = false
+
+    const tick = () => {
+      const dur = video.duration
+      if (dur && Number.isFinite(dur)) {
+        const diff = targetTime - video.currentTime
+        if (Math.abs(diff) > 0.001) {
+          video.currentTime = video.currentTime + diff * 0.22
+        }
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+    const startLoop = () => {
+      if (!running) {
+        running = true
+        rafId = requestAnimationFrame(tick)
+      }
+    }
+    const stopLoop = () => {
+      running = false
+      cancelAnimationFrame(rafId)
+    }
 
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(section)
-
-      // Estados iniciais (o SVG é autorado no estado final)
-      gsap.set(q('.floor'), { autoAlpha: 0, y: 26 })
-      gsap.set(q('.panel'), { scaleX: 0, transformOrigin: 'left center' })
-      gsap.set([q('.win'), q('.light'), '#g-terreo-entrada', '#g-cota-label'], { autoAlpha: 0 })
-      gsap.set('#g-coroamento', { autoAlpha: 0, y: 12 })
-      gsap.set('#g-grua', { autoAlpha: 0, scaleY: 0.55, transformOrigin: '50% 100%' })
-      gsap.set('#g-escavacao', { scaleY: 0, transformOrigin: '50% 0%' })
-      gsap.set(q('#g-estacas rect'), { y: -70, autoAlpha: 0 })
-      gsap.set('#g-radier', { scaleX: 0, transformOrigin: 'left center' })
-      gsap.set('#g-cota', { scaleY: 0, transformOrigin: '50% 100%' })
-      gsap.set('#g-selo', { autoAlpha: 0, scale: 1.7, transformOrigin: '50% 50%' })
-      gsap.set('#sky-day', { opacity: 0 })
       gsap.set(q('.stage-block'), { autoAlpha: 0, y: 24 })
 
       const tl = gsap.timeline({
@@ -65,8 +77,12 @@ function ObraAnimated() {
           pin: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onToggle: (st) => (st.isActive ? startLoop() : stopLoop()),
           onUpdate: (st) => {
             const p = st.progress
+            const dur = video.duration
+            if (dur && Number.isFinite(dur)) targetTime = p * (dur - 0.05)
+
             let i = STAGE_BOUNDS.length - 1
             while (i > 0 && p < STAGE_BOUNDS[i]) i--
             if (hudStageRef.current) {
@@ -88,72 +104,71 @@ function ObraAnimated() {
       const hideBlock = (i: number, at: number) =>
         tl.to(blocks[i], { autoAlpha: 0, y: -18, duration: 2, ease: 'power2.in' }, at)
 
-      // ETAPA 01 — FUNDAÇÃO (0–24)
+      // etapas: 0–24 · 24–54 · 54–79 · 79–100 (unidades da timeline)
       showBlock(0, 0)
-      tl.to('#g-lote', { autoAlpha: 0, duration: 3 }, 0)
-      tl.to('#g-escavacao', { scaleY: 1, duration: 5 }, 1)
-      tl.to(q('#g-estacas rect'), { y: 0, autoAlpha: 1, duration: 4, stagger: 0.8 }, 5.5)
-      tl.to('#g-radier', { scaleX: 1, duration: 5 }, 12)
-      tl.to(['#g-escavacao', '#g-estacas'], { autoAlpha: 0, duration: 3 }, 17.5)
-      hideBlock(0, 21)
-
-      // ETAPA 02 — ESTRUTURA (24–54)
-      showBlock(1, 24)
-      tl.to('#g-grua', { autoAlpha: 1, scaleY: 1, duration: 4 }, 24)
-      tl.to(q('.floor'), { autoAlpha: 1, y: 0, duration: 3, stagger: 2.2 }, 27)
-      tl.to('#g-cota', { scaleY: 1, duration: 22 }, 27)
-      tl.to('#g-cota-label', { autoAlpha: 1, duration: 2 }, 48)
-      tl.to('#g-grua-jib', { rotation: -3.5, svgOrigin: '602 240', duration: 9 }, 29)
-      tl.to('#g-grua-jib', { rotation: 2.5, svgOrigin: '602 240', duration: 9 }, 40)
-      tl.to('#sky-day', { opacity: 0.45, duration: 22 }, 30)
-      hideBlock(1, 51)
-
-      // ETAPA 03 — FACHADA (54–79)
-      showBlock(2, 54)
-      tl.to('#g-grua-jib', { rotation: 0, svgOrigin: '602 240', duration: 8 }, 56)
-      tl.to(q('.panel'), { scaleX: 1, duration: 2.5, stagger: 1.7 }, 54)
-      tl.to(q('.win'), { autoAlpha: 1, duration: 2, stagger: 0.32 }, 58)
-      tl.to('#g-terreo-entrada', { autoAlpha: 1, duration: 3 }, 72)
-      hideBlock(2, 76)
-
-      // ETAPA 04 — ENTREGA (79–100)
-      showBlock(3, 79)
-      tl.to('#g-grua', { autoAlpha: 0, x: 70, duration: 5 }, 79)
-      tl.to('#g-coroamento', { autoAlpha: 1, y: 0, duration: 4 }, 81)
-      tl.to('#sky-day', { opacity: 1, duration: 16 }, 80)
-      tl.to(q('.light'), { autoAlpha: 0.95, duration: 2, stagger: { each: 0.16, from: 'random' } }, 84)
-      tl.to('#g-selo', { autoAlpha: 1, scale: 1, duration: 4, ease: 'back.out(2)' }, 92)
-      tl.to({}, { duration: 4 }) // respiro final antes de soltar o pin
+      hideBlock(0, 20)
+      showBlock(1, 26)
+      hideBlock(1, 50)
+      showBlock(2, 56)
+      hideBlock(2, 75)
+      showBlock(3, 81)
+      tl.to({}, { duration: 19 }) // estende a timeline até 100
     }, section)
 
-    return () => ctx.revert()
+    // dispara o carregamento completo quando a seção se aproxima
+    const warm = () => {
+      video.preload = 'auto'
+      video.load()
+    }
+    const warmTrigger = gsap.context(() => {
+      gsap.to(
+        {},
+        {
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 160%',
+            once: true,
+            onEnter: warm,
+          },
+        },
+      )
+    })
+
+    return () => {
+      stopLoop()
+      warmTrigger.revert()
+      ctx.revert()
+    }
   }, [])
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
   return (
     <section
       id="obra"
       ref={sectionRef}
       aria-label="Etapas da obra"
-      className="relative h-screen overflow-hidden"
+      className="relative h-screen overflow-hidden bg-grafite"
     >
-      {/* céu: alvorada → dia (crossfade controlado pela timeline) */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(180deg,#2b3a50_0%,#4c5a6e_52%,#8d7a68_84%,#3a3f45_100%)]"
-      />
-      <div
-        id="sky-day"
-        aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(180deg,#b8ccd9_0%,#cfdde6_60%,#e5e2d8_100%)]"
-      />
-
-      {/* cena */}
-      <div className="absolute inset-x-0 bottom-14 top-14 md:bottom-16 lg:right-[400px]">
-        <BuildingScene className="h-full w-full will-change-transform" />
+      {/* timelapse da obra: o scroll controla o tempo do vídeo */}
+      <div aria-hidden="true" className="absolute inset-0">
+        <video
+          ref={videoRef}
+          className="h-full w-full object-cover"
+          src={isMobile ? '/videos/vertice-obra-960.mp4' : '/videos/vertice-obra-1920.mp4'}
+          poster="/images/vertice-terreno-poster.webp"
+          muted
+          playsInline
+          preload="metadata"
+          tabIndex={-1}
+        />
+        {/* proteção de legibilidade nas bordas */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-grafite/70 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-grafite/50 to-transparent" />
       </div>
 
       {/* blocos de texto por etapa */}
-      <div className="absolute inset-x-4 bottom-20 z-10 md:inset-x-auto md:right-8 md:top-1/2 md:w-[360px] md:-translate-y-1/2 lg:right-16">
+      <div className="absolute inset-x-4 bottom-16 z-10 md:inset-x-auto md:right-8 md:top-1/2 md:w-[360px] md:-translate-y-1/2 lg:right-16">
         <div className="relative">
           {stages.map((s) => (
             <div

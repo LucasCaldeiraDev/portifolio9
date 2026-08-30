@@ -12,6 +12,8 @@ export interface Stage {
   titulo: string
   texto: string
   dados: StageDatum[]
+  img: string
+  imgAlt: string
 }
 
 export const stages: Stage[] = [
@@ -27,6 +29,9 @@ export const stages: Stage[] = [
       { label: 'Estacas', value: '48 un' },
       { label: 'Concreto', value: '900 m³' },
     ],
+    img: '/images/vertice-fundacao.webp',
+    imgAlt:
+      'Canteiro de obras na alvorada: escavação aberta com armaduras de estacas expostas e barreiras laranja no perímetro do lote',
   },
   {
     id: 'estrutura',
@@ -40,6 +45,9 @@ export const stages: Stage[] = [
       { label: 'Pé-direito', value: '2,90 m' },
       { label: 'Ciclo de laje', value: '7 dias' },
     ],
+    img: '/images/vertice-estrutura.webp',
+    imgAlt:
+      'Esqueleto de concreto armado de 12 pavimentos ao amanhecer, com fôrmas no topo e grua laranja ao lado',
   },
   {
     id: 'fachada',
@@ -53,6 +61,9 @@ export const stages: Stage[] = [
       { label: 'Esquadrias', value: '96 un' },
       { label: 'Desempenho', value: 'NBR 15575' },
     ],
+    img: '/images/vertice-fachada.webp',
+    imgAlt:
+      'Torre com dois terços inferiores já fechados em painéis de fachada bege e o topo ainda em concreto aparente, com plataformas de fachada e grua',
   },
   {
     id: 'entrega',
@@ -66,8 +77,14 @@ export const stages: Stage[] = [
       { label: 'Plantas', value: '62–118 m²' },
       { label: 'Habite-se', value: '2029' },
     ],
+    img: '/images/vertice-entrega.webp',
+    imgAlt:
+      'Torre residencial concluída na golden hour, com fachada bege, janelas acesas e marquise laranja na entrada do térreo',
   },
 ]
+
+export const avisoImagens =
+  'Imagens ilustrativas geradas por IA (Higgsfield · Nano Banana 2) para este estudo de portfólio.'
 
 export const ficha = {
   titulo: 'Ficha técnica',
@@ -94,7 +111,7 @@ export const autor = {
   nome: 'Lucas Caldeira Pires',
   papel: 'Desenvolvedor front-end',
   texto:
-    'Esta página é um estudo de scroll-storytelling: React, TypeScript, GSAP ScrollTrigger e um único SVG autoral que o scroll transforma em prédio — sem vídeo, sem imagens, sem peso.',
+    'Esta página é um estudo de scroll-storytelling: React, TypeScript, GSAP ScrollTrigger, um SVG autoral que o scroll transforma em prédio e fotografia de obra gerada por IA com direção de consistência entre as etapas — tudo em menos de 500 kB de imagens.',
   email: 'fluxorahub.crm@gmail.com',
   // TODO: trocar pelo perfil real do GitHub
   github: 'https://github.com/',

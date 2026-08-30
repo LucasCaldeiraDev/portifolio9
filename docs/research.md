@@ -13,7 +13,8 @@
 |---|---|---|---|
 | Vídeo scrubbed | foto-realismo | seek impreciso em mobile, asset pesado, difícil reverter | descartado |
 | Sequência de frames | controle por frame | centenas de imagens, peso, pipeline de asset | descartado |
-| SVG em camadas + GSAP scrub | leve (~kb), reversível perfeito, nítido em qualquer DPI, mostra craft de código | exige desenho manual do SVG | **escolhido** |
+| SVG em camadas + GSAP scrub | leve (~kb), reversível perfeito, nítido em qualquer DPI, mostra craft de código | exige desenho manual do SVG; cliente quis realismo | primeira versão |
+| Fotos IA consistentes + crossfade/push-in scrubbed | realismo fotográfico, leve (4 webp), reversível, sem seek de vídeo | granularidade por etapa (4 quadros) | **escolhido (feedback do cliente)** |
 
 ## Vernáculo visual do assunto (construção civil)
 
